@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>CreatorVault Studio</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brandmark">CV</div>
+      <div>
+        <strong>CreatorVault Studio</strong>
+        <small>v<span id="appVersion">1.6.0</span></small>
+      </div>
+    </div>
+    <nav class="nav" aria-label="Navegação principal">
+      <button class="navitem active" data-tab="dashboard">Painel</button>
+      <button class="navitem" data-tab="downloads">Downloads</button>
+      <button class="navitem" data-tab="library">Biblioteca</button>
+      <button class="navitem" data-tab="projects">Projetos</button>
+      <button class="navitem" data-tab="clips">Cortes</button>
+      <button class="navitem" data-tab="settings">Configurações</button>
+    </nav>
+    <div class="sidebarfoot">
+      <div class="status"><i id="dot"></i><span id="toolState">Verificando ferramentas</span></div>
+      <div class="caption">Seus arquivos e configurações ficam neste computador.</div>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <div class="crumb">Workspace / <span id="crumb">PAINEL</span></div>
+      <div class="topright"><span class="pill">Windows • Local</span><button type="button" class="smallbutton hidden" id="shutdownBtn">Encerrar aplicativo</button></div>
+    </header>
+    <div class="content">
+      <div class="help hidden" id="connectionNotice" role="status">A conexão com o aplicativo foi interrompida. Abra o executável novamente se ele tiver sido encerrado.</div>
+      <div class="help hidden" id="queueNotice" role="status">A fila está pausada por uma confirmação de acesso. Confira a tarefa, ajuste a autenticação e use Tentar novamente. <button class="smallbutton" data-tab="settings">Abrir configurações</button><button class="smallbutton" id="resumeQueue">Retomar fila</button></div>
+      <section class="workspacehead">
+        <div><h1>Gerenciador de mídia</h1><p>Downloads autorizados, arquivos locais e recortes em um só lugar.</p></div>
+        <div class="heroactions"><button class="primary" id="heroAdd">Novo download</button><button class="secondary" id="quickProjects">Projetos</button></div>
+      </section>
+      <section class="stats" id="stats"></section>
+      <section class="tab" data-page="dashboard">
+        <div class="sectiontitle">
+          <div><span class="eyebrow">ATIVIDADE RECENTE</span><h2>Downloads e tarefas</h2></div>
+          <button class="ghost" data-tab="downloads">Ver tudo</button>
+        </div>
+        <div id="recent"></div>
+        <div class="legal">Use apenas arquivos cuja obtenção esteja autorizada pelas regras aplicáveis, pelos direitos de uso e pela legislação. O aplicativo organiza o processo, mas não concede permissão por si só.</div>
+      </section>
+      <section class="tab hidden" data-page="downloads">
+        <div class="sectiontitle"><div><span class="eyebrow">CAPTURA</span><h2>Novo download</h2></div></div>
+        <div class="twoCols">
+          <div class="panel">
+            <div class="paneltitle">Adicionar link</div>
+            <label class="field">Link do vídeo<input id="sourceUrl" type="url" placeholder="https://..."></label>
+            <div class="inspectrow"><button class="secondary" id="inspectBtn">Analisar link</button><span class="hint" id="inspectHint">Veja título, canal e resoluções antes de baixar.</span></div>
+            <div id="preview"></div>
+            <div class="formrow">
+              <label class="field">Qualidade / formato<select id="mode"><option value="best">Melhor disponível</option><option value="2160">Até 4K (2160p)</option><option value="1440">Até 1440p</option><option value="1080">Até 1080p</option><option value="720">Até 720p</option><option value="480">Até 480p</option><option value="mp3">MP3 (somente áudio)</option></select></label>
+              <label class="field">Projeto<select id="projectChoice"><option value="">Sem projeto</option></select></label>
+            </div>
+            <div class="formrow">
+              <label class="field">Autor / canal<input id="sourceAuthor" placeholder="Nome para os créditos"></label>
+              <label class="field">Licença / permissão<input id="license" placeholder="Ex.: vídeo próprio; CC BY"></label>
+            </div>
+            <label class="checkline"><input type="checkbox" id="authorized"><span>Confirmo que posso obter este conteúdo de acordo com as regras aplicáveis.</span></label>
+            <button class="primary stretch" id="addJob">Adicionar à fila</button>
+          </div>
+          <div class="panel">
+            <div class="paneltitle">Ferramentas e importação</div>
+            <div id="dependencies"></div>
+            <button class="secondary stretch mt-small" data-tab="settings">Instalar ferramentas / configurar YouTube</button>
+            <div class="help"><strong>Importar arquivo local</strong><p>Se o arquivo já está no seu PC, ele pode ser copiado para a biblioteca.</p><input id="localFile" class="fileinput" type="file" accept="video/*,audio/*,.mkv,.avi,.m4v"><label class="checkline"><input type="checkbox" id="localAuthorized"><span>Tenho autorização para utilizar este arquivo.</span></label><button class="secondary" id="importFile">Importar para biblioteca</button></div>
+            <div class="help"><strong>Pasta atual de destino</strong><p id="downloadPath" class="break"></p></div>
+            <div class="help"><strong>Status do processamento</strong><p>O download e a finalização são etapas diferentes. Se um arquivo existir, mas não for possível confirmar a conclusão, ele será marcado para verificação.</p></div>
+          </div>
+        </div>
+        <div class="sectiontitle mt"><div><span class="eyebrow">FILA</span><h2>Tarefas</h2></div></div>
+        <div id="queue"></div>
+      </section>
+      <section class="tab hidden" data-page="library">
+        <div class="sectiontitle"><div><span class="eyebrow">BIBLIOTECA</span><h2>Arquivos concluídos</h2></div><input id="searchLibrary" class="search" placeholder="Pesquisar..."></div>
+        <div id="library" class="librarygrid"></div>
+      </section>
+      <section class="tab hidden" data-page="projects">
+        <div class="sectiontitle"><div><span class="eyebrow">PROJETOS</span><h2>Organização</h2></div></div>
+        <div class="twoCols"><div class="panel"><div class="paneltitle">Criar projeto</div><label class="field">Nome<input id="projectName" maxlength="80" placeholder="Ex.: Documentário ILL"></label><label class="field">Descrição<textarea id="projectDescription" rows="4" placeholder="Objetivo, fontes e referências..."></textarea></label><button class="primary" id="newProject">Criar projeto</button></div><div id="projectList"></div></div>
+      </section>
+      <section class="tab hidden" data-page="clips">
+        <div class="sectiontitle"><div><span class="eyebrow">CORTES</span><h2>Recortes rápidos</h2></div></div>
+        <div class="twoCols"><div class="panel"><div class="paneltitle">Gerar recorte local</div><p class="hint">Escolha um vídeo baixado e informe o trecho. O original será preservado.</p><label class="field">Vídeo de origem<select id="clipVideo"><option value="">Selecione um arquivo</option></select></label><div class="formrow"><label class="field">Início (HH:MM:SS)<input id="clipStart" value="00:00:00"></label><label class="field">Fim (HH:MM:SS)<input id="clipEnd" value="00:00:30"></label></div><button id="createClip" class="primary">Gerar corte</button><div class="hint mt-small" id="clipHint"></div></div><div class="panel"><div class="paneltitle">Últimos cortes</div><div id="clipList"></div></div></div>
+      </section>
+      <section class="tab hidden" data-page="settings">
+        <div class="sectiontitle"><div><span class="eyebrow">CONFIGURAÇÕES</span><h2>Preparar o aplicativo</h2></div></div>
+        <div class="twoCols">
+          <div class="panel">
+            <div class="paneltitle">Acesso ao YouTube</div>
+            <p class="hint">Se o YouTube pedir confirmação, abra o vídeo no navegador e conclua a verificação. Salve uma das opções abaixo e teste o acesso.</p>
+            <label class="field">Autenticação<select id="authMethod"><option value="none">Sem cookies</option><option value="browser">Usar cookies do navegador deste PC</option><option value="file">Usar arquivo cookies.txt importado</option></select></label>
+            <div id="browserAuthFields" class="hidden">
+              <label class="field">Navegador<select id="authBrowser"><option value="brave">Brave</option><option value="chrome">Chrome</option><option value="edge">Edge</option><option value="firefox">Firefox</option><option value="chromium">Chromium</option><option value="opera">Opera</option><option value="vivaldi">Vivaldi</option></select></label>
+              <label class="field">Perfil (opcional)<input id="authProfile" maxlength="500" placeholder="Ex.: Default ou Profile 1"></label>
+              <p class="hint">O yt-dlp lê a sessão local desse navegador somente para as solicitações ao YouTube. Se o navegador bloquear a leitura, feche suas janelas ou use um arquivo de cookies.</p>
+            </div>
+            <div class="help">
+              <strong>Importar cookies.txt</strong><p>Escolha um arquivo no formato Netscape exportado do YouTube. Somente cookies do YouTube serão guardados nesta máquina. Não compartilhe esse arquivo.</p>
+              <input class="fileinput" id="cookiesFile" type="file" accept=".txt,text/plain">
+              <button class="secondary" id="importCookies">Importar cookies</button><p class="hint" id="cookiesState"></p>
+            </div>
+            <button class="primary stretch mt-small" id="saveAuth">Salvar autenticação</button>
+            <label class="field mt">Link para testar o acesso<input id="authTestUrl" type="url" placeholder="https://www.youtube.com/watch?v=..."></label>
+            <button class="secondary" id="testAuth">Testar acesso (sem baixar)</button><p class="hint" id="authHint" role="status"></p>
+          </div>
+          <div>
+            <div class="panel">
+              <div class="paneltitle">Instalação e atualização</div>
+              <div id="settingsDependencies"></div>
+              <p class="hint">Node.js vem na versão portátil. O botão abaixo baixa ou atualiza yt-dlp e instala FFmpeg/FFprobe na pasta do aplicativo. Não precisa de instalação como administrador.</p>
+              <button class="primary stretch" id="installTools">Instalar / atualizar ferramentas</button>
+              <p class="hint" id="toolsHint" role="status"></p><details id="toolDetails" class="jobdetails hidden"><summary>Detalhes da instalação</summary><pre id="toolLog"></pre></details>
+            </div>
+            <div class="panel mt">
+              <div class="paneltitle">Pasta de downloads</div>
+              <label class="field">Destino<input id="destinationDir" placeholder="E:\CreatorVaultStudio\Downloads"></label>
+              <p class="hint">Arquivos já baixados continuam no local original. Novos downloads e cortes usam a pasta escolhida.</p>
+              <button class="secondary" id="saveDestination">Salvar pasta</button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <footer>CreatorVault Studio <span>•</span> Ferramenta local para criadores <span>•</span> Não afiliado ao YouTube</footer>
+    </div>
+  </main>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script type="module" src="/app.js"></script>
+</body>
+</html>
