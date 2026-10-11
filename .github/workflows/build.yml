@@ -1,0 +1,77 @@
+name: Testar e gerar executavel Windows
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - run: npm test
+      - name: Preparar teste da interface
+        run: |
+          npm install --no-save --package-lock=false playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Verificar interface no navegador
+        env:
+          CV_UI_ARTIFACT_DIR: dist/ui
+        run: node tests/browser.cjs
+      - name: Guardar capturas da interface
+        uses: actions/upload-artifact@v7
+        with:
+          name: CreatorVault-interface
+          path: dist/ui/*.png
+          if-no-files-found: error
+  windows:
+    needs: tests
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.27.2'
+          cache: false
+      - name: Testar, compilar e incluir runtime portatil
+        shell: pwsh
+        run: ./build.ps1
+      - name: Testar inicio e encerramento do executavel
+        shell: pwsh
+        run: ./scripts/windows-smoke.ps1
+      - name: Disponibilizar pacote de instalacao
+        uses: actions/upload-artifact@v7
+        with:
+          name: CreatorVault-Windows-x64
+          path: |
+            dist/*.zip
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+      - name: Publicar release da tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          $Version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          if ($env:RELEASE_TAG -ne ('v' + $Version)) { throw 'Tag nao corresponde a versao do aplicativo.' }
+          $Assets = @(Get-ChildItem dist -File | Where-Object { $_.Extension -eq '.zip' -or $_.Name -eq 'SHA256SUMS.txt' } | ForEach-Object {$_.FullName})
+          gh release view $env:RELEASE_TAG *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $env:RELEASE_TAG @Assets --clobber
+          } else {
+            gh release create $env:RELEASE_TAG @Assets --verify-tag --title ('CreatorVault Studio ' + $Version) --notes-file RELEASE_NOTES.md
+          }
+          if ($LASTEXITCODE -ne 0) { throw 'Falha ao publicar os arquivos da release.' }
