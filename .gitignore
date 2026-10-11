@@ -1,0 +1,13 @@
+data/
+logs/
+setup_temp/
+.cache-build/
+dist/
+runtime/
+tools/*.exe
+tools/ffmpeg-info/
+CreatorVaultStudio.exe
+*.part
+*.tmp
+node_modules/
+cookies*.txt
