@@ -1,0 +1,3 @@
+Use Configuracoes > Instalar / atualizar ferramentas no painel, ou INSTALAR_FERRAMENTAS.bat.
+Os executaveis sao baixados e verificados no seu computador.
+Cookies ficam em data/private e nao devem ser compartilhados.
